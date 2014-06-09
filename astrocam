@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# See if we are correctly invoked
+if [ -z $1 ]; then
+    echo "No parameter file specified."
+    echo "Usage: $0 paramfile"
+    exit 1
+fi
+
+# If parameter file exist, read in parameter. Otherwise exit.
+if [ -f $1 ]; then
+    . $1
+else
+    echo "Cannot read parameter file $1"
+    exit 1
+fi
+
+cam="/usr/bin/gphoto2 --port usb "
+
+# Say hello
+echo
+echo "-=/ ASTROCAM \=-"
+echo
+
+# Get some device information
+batt=`$cam --get-config batterylevel | grep Current | awk '{print $2}'`
+model=`$cam --get-config cameramodel | grep Current | sed -e 's/Current: //'`
+
+echo "Camera Model: $model"
+echo "Battery: $batt"
+echo
+echo "Configure camera ... "
+echo -n "  Disable autopoweroff ... "
+$cam --set-config-value autopoweroff="0" > /dev/null 2>&1
+echo "OK"
+echo -n "  Set image format=$imageformat ... "
+$cam --set-config-value imageformat="$imageformat" > /dev/null 2>&1
+echo "OK"
+echo -n "  Set ISO=$iso ... "
+$cam --set-config-value iso="$iso" > /dev/null 2>&1
+echo "OK"
+echo -n "  Set shutter speed=$shutter ... "
+$cam --set-config-value shutterspeed="$shutter" > /dev/null 2>&1
+echo "OK"
+echo -n "  Set aperture=$aperture ... "
+$cam --set-config-value aperture="$aperture" > /dev/null 2>&1
+echo "OK"
+
+# Read in description
+echo ""
+echo -n "Enter a description: "
+read descr
+if [ "$descr" != "" ]; then
+    descr=" $descr"
+fi
+
+# Create directory and change to it. Copy parameter file to directory
+# for reference
+dir=`date +%Y-%m-%d-%H%M%S`
+dir="$dir$descr"
+mkdir "$dir"
+cp $1 "$dir/."
+cd "$dir"
+
+echo ""
+read -n 1 -r -s -p "Press any key to continue..." key
+
+# Perform images
+$cam --capture-image-and-download -I 1 -F $n_images
+
+# Perform dark images
+if [ "$dark" == "yes"  ]; then
+    echo ""
+    read -n 1 -r -s \
+    -p "Cover lens for dark images and press any key to continue..." key
+    mkdir darks
+    cd darks
+    $cam --capture-image-and-download --filename=dark-%03n.%C -I 1 -F $n_darks
+    echo "Calculate dark master (in background) ..."
+    convert *.jpg -evaluate-sequence mean dark_master.jpg &
+fi
+
+echo "Finished!"
+
+exit 0
