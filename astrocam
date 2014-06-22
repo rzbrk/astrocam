@@ -30,9 +30,9 @@ echo "Camera Model: $model"
 echo "Battery: $batt"
 echo
 echo "Configure camera ... "
-echo -n "  Disable autopoweroff ... "
-$cam --set-config-value autopoweroff="0" > /dev/null 2>&1
-echo "OK"
+#echo -n "  Disable autopoweroff ... "
+#$cam --set-config-value autopoweroff="0" > /dev/null 2>&1
+#echo "OK"
 echo -n "  Set image format=$imageformat ... "
 $cam --set-config-value imageformat="$imageformat" > /dev/null 2>&1
 echo "OK"
