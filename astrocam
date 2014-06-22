@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Define some variables
+gphoto2="/usr/bin/gphoto2"
+convert="/usr/bin/convert"
+
+# Check dependencies
+command -v $gphoto2 >/dev/null 2>&1 \
+    || { echo "gphoto2 is not installed. Aborting." >&2; exit 1; }
+command -v $convert >/dev/null 2>&1 \
+    || { echo "ImageMagick is not installed. Aborting." >&2; exit 1; }
+
 # See if we are correctly invoked
 if [ -z $1 ]; then
     echo "No parameter file specified."
@@ -15,16 +25,23 @@ else
     exit 1
 fi
 
-cam="/usr/bin/gphoto2 --port usb "
+cam="$gphoto2 --port $port "
+
+# Check if camera is connected
+$cam --summary > /dev/null 2>&1
+if [ $? != 0 ]; then
+    echo "Cannot find camera on port \"$port\". Aborting."
+    exit 1
+fi
+
+# Get some device information
+batt=`$cam --get-config batterylevel | grep Current | awk '{print $2}'`
+model=`$cam --get-config cameramodel | grep Current | sed -e 's/Current: //'`
 
 # Say hello
 echo
 echo "-=/ ASTROCAM \=-"
 echo
-
-# Get some device information
-batt=`$cam --get-config batterylevel | grep Current | awk '{print $2}'`
-model=`$cam --get-config cameramodel | grep Current | sed -e 's/Current: //'`
 
 echo "Camera Model: $model"
 echo "Battery: $batt"
