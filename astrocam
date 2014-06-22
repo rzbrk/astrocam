@@ -25,6 +25,40 @@ else
     exit 1
 fi
 
+# Test for some parameters
+if [[ ! $port ]]; then
+    echo "Warning: Variable \"port\" not defined, try with \"usb:\""
+    port="usb:"
+fi
+if [[ ! $imageformat ]]; then
+    echo "Warning: Variable \"imageformat\" not defined, try with \"Large Fine JPEG\""
+    imageformat="Large Fine JPEG"
+fi
+if [[ ! $shutter ]]; then
+    echo "Warning: Variable \"shutter\" not defined. Aborting."
+    exit 1
+fi
+if [[ ! $aperture ]]; then
+    echo "Warning: Variable \"aperture\" not defined. Aborting."
+    exit 1
+fi
+if [[ ! $iso ]]; then
+    echo "Warning: Variable \"shutter\" not defined, try with 400ISO."
+    iso=400
+fi
+if [[ ! $n_images ]]; then
+    echo "Warning: Variable \"n_images\" not defined, try with 1"
+    n_images=1
+fi
+if [[ ! $dark ]]; then
+    echo "Warning: Variable \"dark\" not defined, try with \"no\"."
+    dark="no"
+fi
+if [[ ! $n_darks ]]; then
+    echo "Warning: Variable \"n_darks\" not defined, try with 5."
+    n_darks=5
+fi
+ 
 cam="$gphoto2 --port $port "
 
 # Check if camera is connected
